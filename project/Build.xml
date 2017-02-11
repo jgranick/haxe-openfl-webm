@@ -146,8 +146,11 @@
 <file name="libvpx-generic/vp8/decoder/onyxd_if.c" />
 <file name="libvpx-generic/vpx_config.c" />
 </files>
-	
-<target id="NDLL" output="${name_prefix}openfl-webm${name_extra}" tool="linker" toolid="${ndll-tool}">
+
+
+<!-- <target id="NDLL" output="${name_prefix}openfl-webm${name_extra}" tool="linker" toolid="${ndll-tool}"> -->
+<target id="NDLL" output="${LIBPREFIX}openfl-webm${MSVC_LIB_VERSION}${LIBEXTRA}" tool="linker" toolid="${ndll-tool}">
+
 	<outdir name="../ndll/${BINDIR}" />
 	<ext value=".ndll" unless="mobile"/>
 	<files id="common" />	
