@@ -1,6 +1,7 @@
 package webm;
+
+import flash.utils.ByteArray;
 import haxe.io.BytesData;
-import sys.io.File;
 import sys.io.FileInput;
 
 class WebmIoByteArray extends WebmIo {
