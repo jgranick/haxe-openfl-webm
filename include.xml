@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>	
+	<classpath name="src" />
+
+	<ndll name="openfl-webm" if="android"/>
+	<ndll name="openfl-webm" if="ios"/>
+	
+</project>
