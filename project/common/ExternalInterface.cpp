@@ -665,9 +665,10 @@ extern "C" {
 			int width, height;
 			double frameRate;
 			double duration_sec;
+			bool audio;
 			VorbisDecoder *vorbisDecoder;
 			
-			MkvProcessor(IoMkvReader *reader) {
+			MkvProcessor(IoMkvReader *reader, bool no_audio) {
 				//printf("MkvProcessor\n"); fflush(stdout);
 				this->pCluster = NULL;
 				this->pTracks = NULL;
@@ -681,7 +682,8 @@ extern "C" {
 				this->height = 0;
 				this->frameRate = 30;
 				this->duration_sec = 0;
-				this->vorbisDecoder = new VorbisDecoder();
+				this->audio = !no_audio;
+				if(this->audio) this->vorbisDecoder = new VorbisDecoder();
 			}
 			
 			~MkvProcessor() {
@@ -832,7 +834,7 @@ extern "C" {
 						printf("\t\tVideo Rate\t\t: %f\n", (float)this->frameRate);
 					}
 
-					if (trackType == mkvparser::Track::kAudio) {
+					if (this->audio && trackType == mkvparser::Track::kAudio) {
 						const AudioTrack* const pAudioTrack = static_cast<const AudioTrack*>(pTrack);
 						size_t privateDataSize = 0;
 						unsigned char *privateDataPointer = (unsigned char *)pAudioTrack->GetCodecPrivate(privateDataSize);
@@ -927,7 +929,7 @@ extern "C" {
 							if (trackType == mkvparser::Track::kVideo) {
 								//printf("%lld\n", time_ns);
 								val_call2(decode_video, alloc_float((double)(time_ns / 1000) / (double)(1000 * 1000)), buffer_val(frame_data));
-							} else if (trackType == mkvparser::Track::kAudio) {
+							} else if (this->audio && trackType == mkvparser::Track::kAudio) {
 								vorbisDecoder->parseData((unsigned char *)buffer_data(frame_data), buffer_size(frame_data), time_ns, decode_audio);
 							}
 #endif
@@ -956,10 +958,10 @@ extern "C" {
 			delete processor;
 		}
 
-		DEFINE_FUNC_1(hx_webm_decoder_create, io_value) {
+		DEFINE_FUNC_2(hx_webm_decoder_create, io_value, no_audio) {
 			io_struct* io = _get_io_struct_from_value(io_value);
 			
-			MkvProcessor *processor = new MkvProcessor(new IoMkvReader(io));
+			MkvProcessor *processor = new MkvProcessor(new IoMkvReader(io), no_audio);
 
 			processor->parseHeader();
 			
@@ -995,7 +997,16 @@ extern "C" {
 			//return alloc_bool(processor->hasMore());
 			return alloc_null();
 		}
-		
+
+		DEFINE_FUNC_1(hx_webm_decoder_restart, processor_value) {
+			MkvProcessor* processor = _get_MkvProcessor_from_value(processor_value);
+			processor->startCluster = true;
+			processor->pCluster = NULL;
+			processor->startCluster = true;
+			processor->hasMore = true;
+			return alloc_null();
+		}
+
 		DEFINE_FUNC_0(hx_vorbis_codec_dec_init) {
 			return alloc_null();
 		}

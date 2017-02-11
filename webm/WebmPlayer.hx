@@ -31,13 +31,14 @@ class WebmPlayer extends EventDispatcher {
 	public var duration:Float;
 	
 	var sound:Sound;
+	var sound_enabled:Bool = false;
 
-	public function new(io:WebmIo, targetSprite:Sprite) {
+	public function new(io:WebmIo, targetSprite:Sprite, ?noSound:Bool = false) {
 		super();
 		this.io = io;
 		this.targetSprite = targetSprite;
 		this.webm = new Webm();
-		this.decoder = hx_webm_decoder_create(io.io);
+		this.decoder = hx_webm_decoder_create(io.io, noSound);
 		var info = hx_webm_decoder_get_info(this.decoder);
 		this.width = info[0];
 		this.height = info[1];
@@ -46,11 +47,13 @@ class WebmPlayer extends EventDispatcher {
 		this.bitmapData = new BitmapData(this.width, this.height);
 		this.bitmap = new Bitmap(this.bitmapData, PixelSnapping.AUTO, true);
 		targetSprite.addChild(this.bitmap);
-		this.outputSound = new ByteArray();
-		this.outputSound.endian = Endian.LITTLE_ENDIAN;
-		this.sound = new Sound();
-		this.sound.addEventListener(SampleDataEvent.SAMPLE_DATA, generateSound);
-		this.sound.play();
+
+		this.sound_enabled = !noSound;
+
+		if(sound_enabled) {
+			this.outputSound = new ByteArray();
+			this.outputSound.endian = Endian.LITTLE_ENDIAN;
+		}
 	}
 	
 	public var amp_multiplier_right:Float = 0.5;
@@ -90,22 +93,40 @@ class WebmPlayer extends EventDispatcher {
 	public function getElapsedTime():Float {
 		return haxe.Timer.stamp() - this.startTime;
 	}
+
+	public function restart() {
+		stop(true);
+		renderedCount = 0;
+		lastDecodedVideoFrame = 0;
+		hx_webm_decoder_restart(decoder);
+		this.dispatchEvent(new Event('restart'));
+		play();
+	}
 	
 	public function play() {
 		if (!playing) {
 			this.startTime = haxe.Timer.stamp();
 
 			this.targetSprite.addEventListener("enterFrame", onSpriteEnterFrame);
+			if(sound_enabled) {
+				this.sound = new Sound();
+				this.sound.addEventListener(SampleDataEvent.SAMPLE_DATA, generateSound);
+				this.sound.play();
+			}
 			playing = true;
 			this.dispatchEvent(new Event('play'));
 		}
 	}
 
-	public function stop() {
+	public function stop(?pRestart:Bool = false) {
 		if (playing) {
 			this.targetSprite.removeEventListener("enterFrame", onSpriteEnterFrame);
+			if(sound_enabled) {
+				this.sound.removeEventListener(SampleDataEvent.SAMPLE_DATA, generateSound);
+				this.sound.close();
+			}
 			playing = false;
-			this.dispatchEvent(new Event('stop'));
+			if(!pRestart) this.dispatchEvent(new Event('stop'));
 		}
 	}
 	
@@ -140,6 +161,7 @@ class WebmPlayer extends EventDispatcher {
 	}
 	
 	private function outputAudioFrame(time:Float, data:BytesData):Void {
+		if(!sound_enabled) return;
 		var byteArray:ByteArray = ByteArray.fromBytes(Bytes.ofData(data));
 		this.outputSound.position = this.outputSound.length;
 		this.outputSound.writeBytes(byteArray, 0, byteArray.length);
@@ -147,8 +169,9 @@ class WebmPlayer extends EventDispatcher {
 		//trace("DECODE AUDIO FRAME! " + getElapsedTime() + ":" + time);
 	}
 	
-	static var hx_webm_decoder_create = cpp.Lib.load("openfl-webm", "hx_webm_decoder_create", 1);
+	static var hx_webm_decoder_create = cpp.Lib.load("openfl-webm", "hx_webm_decoder_create", 2);
 	static var hx_webm_decoder_get_info = cpp.Lib.load("openfl-webm", "hx_webm_decoder_get_info", 1);
 	static var hx_webm_decoder_has_more = cpp.Lib.load("openfl-webm", "hx_webm_decoder_has_more", 1);
 	static var hx_webm_decoder_step = cpp.Lib.load("openfl-webm", "hx_webm_decoder_step", 3);
+	static var hx_webm_decoder_restart = cpp.Lib.load("openfl-webm", "hx_webm_decoder_restart", 1);
 }
