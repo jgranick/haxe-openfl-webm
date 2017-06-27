@@ -137,7 +137,7 @@ class WebmPlayer extends EventDispatcher {
 		while (hx_webm_decoder_has_more(decoder) && lastDecodedVideoFrame < getElapsedTime()) {
 		//while (hx_webm_decoder_has_more(decoder)) {
 			hx_webm_decoder_step(decoder, decodeVideoFrame, outputAudioFrame);
-			if (renderedCount > startRenderedCount) break;
+			//if (renderedCount > startRenderedCount) break;
 		}
 		
 		if (!hx_webm_decoder_has_more(decoder)) {
