@@ -12,6 +12,7 @@ import flash.media.Sound;
 import flash.utils.ByteArray;
 import flash.utils.Endian;
 import webm.internal.WebmUtils;
+import lime.system.CFFI;
 
 class WebmPlayer extends EventDispatcher {
 	var webm:Webm;
@@ -169,9 +170,9 @@ class WebmPlayer extends EventDispatcher {
 		//trace("DECODE AUDIO FRAME! " + getElapsedTime() + ":" + time);
 	}
 	
-	static var hx_webm_decoder_create = cpp.Lib.load("openfl-webm", "hx_webm_decoder_create", 2);
-	static var hx_webm_decoder_get_info = cpp.Lib.load("openfl-webm", "hx_webm_decoder_get_info", 1);
-	static var hx_webm_decoder_has_more = cpp.Lib.load("openfl-webm", "hx_webm_decoder_has_more", 1);
-	static var hx_webm_decoder_step = cpp.Lib.load("openfl-webm", "hx_webm_decoder_step", 3);
-	static var hx_webm_decoder_restart = cpp.Lib.load("openfl-webm", "hx_webm_decoder_restart", 1);
+	static var hx_webm_decoder_create = CFFI.load("openfl-webm", "hx_webm_decoder_create", 2);
+	static var hx_webm_decoder_get_info = CFFI.load("openfl-webm", "hx_webm_decoder_get_info", 1);
+	static var hx_webm_decoder_has_more = CFFI.load("openfl-webm", "hx_webm_decoder_has_more", 1);
+	static var hx_webm_decoder_step = CFFI.load("openfl-webm", "hx_webm_decoder_step", 3);
+	static var hx_webm_decoder_restart = CFFI.load("openfl-webm", "hx_webm_decoder_restart", 1);
 }

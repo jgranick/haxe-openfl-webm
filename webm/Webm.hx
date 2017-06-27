@@ -10,10 +10,11 @@ import flash.utils.Timer;
 import sys.io.File;
 import sys.io.FileInput;
 import webm.internal.WebmUtils;
-import flash.utils.ByteArray;
+import openfl.utils.ByteArray;
 import flash.display.BitmapData;
 import flash.errors.Error;
 import flash.geom.Rectangle;
+import lime.system.CFFI;
 
 class Webm {
 	static public function getVpxDecoderVersion():String {
@@ -28,7 +29,8 @@ class Webm {
 	}
 	
 	public function decode(data:ByteArray) {
-		var info:Array<Int> = hx_vpx_codec_decode(this.context, data.getData());
+		var bytes:Bytes = data;
+		var info:Array<Int> = hx_vpx_codec_decode(this.context, bytes.getData ());
 		var width:Int = info[0];
 		var height:Int = info[1];
 		var isKeyFrame:Bool = (info[2] != 0);
@@ -156,9 +158,9 @@ class Webm {
 		return hx_create_io(read, seek, tell);
 	}
 	
-	static var hx_vpx_codec_iface_name:Void -> String = cpp.Lib.load("openfl-webm", "hx_vpx_codec_iface_name", 0);
-	static var hx_vpx_codec_dec_init:Void -> Dynamic = cpp.Lib.load("openfl-webm", "hx_vpx_codec_dec_init", 0);
-	static var hx_vpx_codec_decode = cpp.Lib.load("openfl-webm", "hx_vpx_codec_decode", 2);
-	static var hx_vpx_codec_get_frame = cpp.Lib.load("openfl-webm", "hx_vpx_codec_get_frame", 1);
-	static var hx_create_io = cpp.Lib.load("openfl-webm", "hx_create_io", 3);
+	static var hx_vpx_codec_iface_name:Void -> String = CFFI.load("openfl-webm", "hx_vpx_codec_iface_name", 0);
+	static var hx_vpx_codec_dec_init:Void -> Dynamic = CFFI.load("openfl-webm", "hx_vpx_codec_dec_init", 0);
+	static var hx_vpx_codec_decode = CFFI.load("openfl-webm", "hx_vpx_codec_decode", 2);
+	static var hx_vpx_codec_get_frame = CFFI.load("openfl-webm", "hx_vpx_codec_get_frame", 1);
+	static var hx_create_io = CFFI.load("openfl-webm", "hx_create_io", 3);
 }
