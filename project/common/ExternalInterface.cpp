@@ -1012,3 +1012,10 @@ extern "C" {
 		}
 	}
 }
+
+
+extern "C" int openfl_webm_register_prims () {
+	
+	return 0;
+	
+}
